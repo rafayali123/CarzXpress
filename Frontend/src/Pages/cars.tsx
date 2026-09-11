@@ -1,121 +1,33 @@
 import React, { useState, useEffect } from 'react';
-
-// Empty initial cars array as we'll fetch from API
-const initialCars: any[] = [
-  {
-    name: 'Tesla Model S',
-    price: '$80,000',
-    description: 'Luxury electric sedan with autopilot features.',
-    image: 'https://share.google/images/W44ia6Ki4m9XWP3mm',
-    company: 'Tesla',
-  },
-  {
-    name: 'BMW M4 Coupe',
-    price: '$75,000',
-    description: 'Performance-driven German engineering.',
-    image: 'https://source.unsplash.com/400x250/?bmw',
-    company: 'BMW',
-  },
-  {
-    name: 'Audi Q8',
-    price: '$70,000',
-    description: 'Premium SUV with cutting-edge tech.',
-    image: 'https://source.unsplash.com/400x250/?audi',
-    company: 'Audi',
-  },
-  {
-    name: 'Toyota Supra',
-    price: '$50,000',
-    description: 'Stylish and sporty performance machine.',
-    image: 'https://source.unsplash.com/400x250/?supra',
-    company: 'Toyota',
-  },
-  {
-    name: 'Tesla Model X',
-    price: '$90,000',
-    description: 'Electric SUV with falcon wing doors.',
-    image: 'https://source.unsplash.com/400x250/?tesla,suv',
-    company: 'Tesla',
-  },
-  {
-    name: 'BMW X5',
-    price: '$65,000',
-    description: 'Luxury SUV for comfort and performance.',
-    image: 'https://source.unsplash.com/400x250/?bmw,suv',
-    company: 'BMW',
-  },
-  {
-    name: 'Audi A4',
-    price: '$45,000',
-    description: 'Elegant sedan with advanced features.',
-    image: 'https://source.unsplash.com/400x250/?audi,sedan',
-    company: 'Audi',
-  },
-  {
-    name: 'Toyota Corolla',
-    price: '$25,000',
-    description: 'Reliable and efficient compact sedan.',
-    image: 'https://source.unsplash.com/400x250/?toyota,car',
-    company: 'Toyota',
-  },
-  {
-    name: 'Tesla Roadster',
-    price: '$200,000',
-    description: 'High-performance electric sports car.',
-    image: 'https://source.unsplash.com/400x250/?tesla,roadster',
-    company: 'Tesla',
-  },
-  {
-    name: 'BMW Z4',
-    price: '$60,000',
-    description: 'Convertible with premium driving experience.',
-    image: 'https://source.unsplash.com/400x250/?bmw,z4',
-    company: 'BMW',
-  },
-  {
-    name: 'Audi TT',
-    price: '$50,000',
-    description: 'Stylish compact sports car.',
-    image: 'https://source.unsplash.com/400x250/?audi,tt',
-    company: 'Audi',
-  },
-  {
-    name: 'Toyota Camry',
-    price: '$30,000',
-    description: 'Spacious and fuel-efficient sedan.',
-    image: 'https://source.unsplash.com/400x250/?toyota,camry',
-    company: 'Toyota',
-  },
-];
+import { FaSearch, FaArrowRight, FaTimes, FaShieldAlt } from 'react-icons/fa';
 
 const Cars: React.FC = () => {
   const [search, setSearch] = useState('');
   const [companyFilter, setCompanyFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCar, setSelectedCar] = useState<any>(null);
-  const [cars, setCars] = useState(initialCars);
+  const [cars, setCars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const itemsPerPage = 12;
 
-  // Fetch cars from API when component mounts
+  // Fetch live inventory from API when component mounts
   useEffect(() => {
     const fetchCars = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8005/api/cars');
+        const response = await fetch('http://localhost:8005/api/cars', { cache: 'no-store' });
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('Fetched cars data:', data); // Debug log
         setCars(data);
         setError(null);
       } catch (err) {
-        console.error('Error fetching cars:', err); // Debug log
-        setError('Failed to load cars. Please try again later.');
+        console.error('Error fetching cars:', err);
+        setError('Failed to load live inventory from server. Please ensure your backend service is running.');
       } finally {
         setLoading(false);
       }
@@ -136,111 +48,180 @@ const Cars: React.FC = () => {
 
   const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
 
+  const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = '/images/Sports Car.png';
+  };
+
+  // Extract unique manufacturers dynamically from fetched data
+  const uniqueCompanies = ['All', ...Array.from(new Set(cars.map((car) => car.company).filter(Boolean)))];
+
   return (
-    <div className="bg-gradient-to-b from-gray-100 to-gray-300 min-h-screen px-6 py-16">
-      <h1 className="text-5xl font-extrabold text-center text-gray-900 mb-12 underline decoration-yellow-500">Explore Our Collection</h1>
+    <div className="bg-[#050505] min-h-screen px-4 sm:px-8 lg:px-16 py-20 text-gray-100 selection:bg-amber-400 selection:text-black font-sans relative overflow-hidden">
       
-      {/* Error message */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
-          <p>{error}</p>
-        </div>
-      )}
+      {/* Background ambient lighting */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-amber-500/10 blur-[150px] pointer-events-none rounded-full"></div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10">
-        <input
-          type="text"
-          placeholder="Search cars..."
-          className="w-full md:w-1/2 px-5 py-3 rounded-full shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <select
-          className="w-full md:w-1/4 px-4 py-3 rounded-full shadow-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          value={companyFilter}
-          onChange={(e) => setCompanyFilter(e.target.value)}
-        >
-          <option value="All">All Companies</option>
-          <option value="Tesla">Tesla</option>
-          <option value="BMW">BMW</option>
-          <option value="Audi">Audi</option>
-          <option value="Toyota">Toyota</option>
-        </select>
-      </div>
-
-      {/* Loading indicator */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500 mb-4"></div>
-          <p className="text-gray-600">Loading cars...</p>
+      <div className="max-w-[1400px] mx-auto relative z-10">
+        
+        {/* Header Section */}
+        <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+          <span className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-amber-500/10 text-amber-400 text-xs font-semibold tracking-widest uppercase border border-amber-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+            Exclusive Fleet
+          </span>
+          <h1 className="text-4xl sm:text-6xl font-serif italic font-extrabold text-white tracking-tight">
+            Explore Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 not-italic font-sans">Collection</span>
+          </h1>
+          <p className="text-gray-400 text-sm sm:text-base font-light">
+            Discover premier performance machinery, executive sedans, and revolutionary electric models.
+          </p>
         </div>
-      ) : cars.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">No cars available at the moment.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {currentCars.map((car, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition duration-300"
+        
+        {/* Error message */}
+        {error && (
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-6 py-4 rounded-2xl mb-8 flex items-center space-x-3 shadow-lg" role="alert">
+            <span className="text-lg">⚠️</span>
+            <p className="text-xs sm:text-sm font-medium">{error}</p>
+          </div>
+        )}
+
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-12">
+          <div className="w-full md:w-2/3 relative flex items-center bg-[#0C0B09] border border-neutral-800 rounded-2xl shadow-xl">
+            <div className="pl-4 text-amber-400">
+              <FaSearch size={16} />
+            </div>
+            <input
+              type="text"
+              placeholder="Search cars by name..."
+              className="w-full bg-transparent px-4 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            />
+          </div>
+
+          <select
+            className="w-full md:w-1/3 px-6 py-3.5 rounded-2xl bg-[#0C0B09] border border-neutral-800 text-gray-300 focus:outline-none focus:border-amber-500/50 transition-colors shadow-xl cursor-pointer text-sm font-medium"
+            value={companyFilter}
+            onChange={(e) => { setCompanyFilter(e.target.value); setCurrentPage(1); }}
           >
-            <img src={car.image} alt={car.name} className="w-full h-48 object-cover" />
-            <div className="p-5">
-              <h3 className="text-xl font-bold text-gray-800 mb-1">{car.name}</h3>
-              <p className="text-yellow-600 font-semibold mb-1">{car.price}</p>
-              <p className="text-sm text-gray-600 mb-3">{car.description}</p>
-              <button
-                className="bg-yellow-400 text-white px-4 py-2 rounded-lg hover:bg-yellow-500 transition w-full"
-                onClick={() => setSelectedCar(car)}
+            {uniqueCompanies.map((company, idx) => (
+              <option key={idx} value={company} className="bg-[#0C0B09]">
+                {company === 'All' ? 'All Manufacturers' : company}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Loading indicator */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-28">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-400 mb-4"></div>
+            <p className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Synchronizing with live inventory...</p>
+          </div>
+        ) : filteredCars.length === 0 ? (
+          <div className="text-center py-24 bg-[#0C0B09] border border-neutral-800 rounded-3xl space-y-4">
+            <p className="text-gray-400 text-base">No vehicles found matching your criteria.</p>
+            <button 
+              onClick={() => { setSearch(''); setCompanyFilter('All'); }}
+              className="px-6 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold uppercase tracking-wider hover:bg-amber-400 hover:text-black transition-all"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {currentCars.map((car, index) => (
+              <div
+                key={car.id || index}
+                className="bg-[#0C0B09] border border-neutral-800/80 rounded-2xl overflow-hidden shadow-xl hover:border-amber-500/50 hover:shadow-amber-500/10 transition-all duration-300 flex flex-col justify-between group"
               >
-                View Details
+                <div className="w-full h-52 bg-[#050505] overflow-hidden relative border-b border-neutral-800/60 p-4 flex items-center justify-center">
+                  {car.company && (
+                    <div className="absolute top-3 left-3 z-10 bg-amber-500/15 border border-amber-500/30 text-amber-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-md backdrop-blur-md uppercase tracking-wider">
+                      {car.company}
+                    </div>
+                  )}
+                  <img src={car.image} alt={car.name} onError={handleImageError} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500 relative z-0" />
+                </div>
+
+                <div className="p-5 flex flex-col flex-grow justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">{car.name}</h3>
+                    <p className="text-amber-400 font-serif font-bold mb-3 text-lg">{car.price}</p>
+                    <p className="text-xs text-gray-400 mb-6 line-clamp-2 font-light leading-relaxed">{car.description}</p>
+                  </div>
+                  <button
+                    className="bg-black/60 border border-neutral-800 text-gray-300 font-semibold text-xs tracking-wide py-2.5 px-4 rounded-xl hover:bg-amber-400 hover:text-black hover:border-amber-400 transition-all duration-300 w-full flex items-center justify-between group/btn"
+                    onClick={() => setSelectedCar(car)}
+                  >
+                    <span>View details</span>
+                    <FaArrowRight size={11} className="transform group-hover/btn:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-14 space-x-2">
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`w-10 h-10 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center border ${
+                  currentPage === i + 1
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 border-amber-400 text-black shadow-lg shadow-amber-500/20'
+                    : 'bg-[#0C0B09] border-neutral-800 text-gray-300 hover:border-amber-500/40'
+                }`}
+              >
+                {i + 1}
               </button>
+            ))}
+          </div>
+        )}
+
+        {/* Modal */}
+        {selectedCar && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-[#0C0B09] border border-neutral-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
+              <button
+                className="absolute top-5 right-5 w-9 h-9 rounded-full bg-neutral-900 border border-neutral-800 text-gray-400 hover:text-white flex items-center justify-center transition-colors"
+                onClick={() => setSelectedCar(null)}
+              >
+                <FaTimes size={14} />
+              </button>
+              
+              <div className="w-full h-56 bg-[#050505] rounded-2xl overflow-hidden mb-6 p-4 border border-neutral-800 flex items-center justify-center relative">
+                <img src={selectedCar.image} alt={selectedCar.name} className="w-full h-full object-contain" />
+              </div>
+
+              <div className="space-y-2 mb-6">
+                {selectedCar.company && (
+                  <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest">{selectedCar.company}</span>
+                )}
+                <h2 className="text-2xl sm:text-3xl font-bold text-white font-serif">{selectedCar.name}</h2>
+                <p className="text-amber-400 font-serif font-bold text-xl">{selectedCar.price}</p>
+                <p className="text-gray-300 text-sm font-light leading-relaxed pt-2">{selectedCar.description}</p>
+              </div>
+
+              <div className="pt-4 border-t border-neutral-800 flex justify-between items-center text-xs text-gray-400">
+                {selectedCar.company && (
+                  <span>Manufacturer: <strong className="text-white">{selectedCar.company}</strong></span>
+                )}
+                <span className="py-1 px-3 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5 font-medium ml-auto">
+                  <FaShieldAlt size={11} /> Verified Stock
+                </span>
+              </div>
             </div>
           </div>
-        ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      <div className="flex justify-center mt-10 space-x-2">
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md transition-all duration-200 ${
-              currentPage === i + 1
-                ? 'bg-yellow-500 text-white'
-                : 'bg-white text-gray-800 hover:bg-yellow-200'
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+        )}
       </div>
-
-      {/* Modal */}
-      {selectedCar && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-lg w-full shadow-lg relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-              onClick={() => setSelectedCar(null)}
-            >
-              ✕
-            </button>
-            <img src={selectedCar.image} alt={selectedCar.name} className="w-full h-56 object-cover rounded-lg mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedCar.name}</h2>
-            <p className="text-yellow-600 font-semibold mb-2">{selectedCar.price}</p>
-            <p className="text-gray-700 mb-4">{selectedCar.description}</p>
-            <p className="text-sm text-gray-500">Company: {selectedCar.company}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 export default Cars;
-
